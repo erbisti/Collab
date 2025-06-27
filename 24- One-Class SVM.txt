@@ -1,0 +1,36 @@
+# One-Class SVM para detecção de outliers em dados circulares
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.svm import OneClassSVM
+from sklearn.datasets import make_circles
+
+# Geração de dados circulares (padrão interessante)
+X, _ = make_circles(n_samples=300, factor=0.5, noise=0.05, random_state=1)
+
+# Inserção de outliers artificiais aleatórios fora da estrutura circular
+X_outliers = np.random.uniform(low=-1.5, high=1.5, size=(30, 2))
+X_total = np.vstack([X, X_outliers])
+
+# Criação e ajuste do modelo One-Class SVM
+# gamma controla o raio de influência dos pontos; nu define fração de outliers permitida
+model = OneClassSVM(kernel='rbf', gamma=0.1, nu=0.1)
+model.fit(X_total)
+
+# Previsão para todos os pontos (1 = normal, -1 = outlier)
+y_pred = model.predict(X_total)
+
+# Separação para plot
+X_inliers = X_total[y_pred == 1]
+X_outliers_detected = X_total[y_pred == -1]
+
+# Plot dos resultados
+plt.figure(figsize=(8, 8))
+plt.scatter(X_inliers[:, 0], X_inliers[:, 1], c='blue', label='Normais', s=20)
+plt.scatter(X_outliers_detected[:, 0], X_outliers_detected[:, 1], c='red', label='Outliers detectados', s=30, marker='x')
+plt.title("Detecção de Outliers com One-Class SVM")
+plt.xlabel("X1")
+plt.ylabel("X2")
+plt.legend()
+plt.grid(True)
+plt.axis('equal')
+plt.show()
